@@ -53,7 +53,7 @@ def get_users():
         search_username = request.args.get('name')
         search_job = request.args.get('job')
         if search_username and search_job :
-            return find_users_by_name_job(search_username, search_job) #not converted to DB access yet 
+            users = User().find_by_name_job(search_username, search_job)
         elif search_username :
             # return find_users_by_name(search_username) #old code left here for comparuson
             users = User().find_by_name(search_username)
@@ -71,19 +71,15 @@ def get_users():
 
 @app.route('/users/<id>', methods=['GET', 'DELETE'])
 def get_user(id):
+    user = User({"_id":id})
     if request.method == 'GET':
-        user = User({"_id":id})
         if user.reload() :
             return user
-        else :
-            return jsonify({"error": "User not found"}), 404
-    elif request.method == 'DELETE': ## still the old version. Turn it into the DB version
-        for user in users['users_list']:
-            if user['id'] == id:
-                users['users_list'].remove(user)
-                resp = jsonify(),204
-                return resp                
-            return jsonify({"error": "User not found"}), 404
+    elif request.method == 'DELETE':
+        if (user.remove() == 1):
+            resp = jsonify(),204
+            return resp                
+    return jsonify({"error": "User not found"}), 404
 
 # def find_users_by_name(name):
 #     subdict = {'users_list' : []}

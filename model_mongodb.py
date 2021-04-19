@@ -1,6 +1,7 @@
 import pymongo
 from bson import ObjectId
 
+
 class Model(dict):
     """
     A simple model that wraps mongodb document
@@ -11,10 +12,10 @@ class Model(dict):
 
     def save(self):
         if not self._id:
-            self.collection.insert(self)
+            self.collection.insert_one(self)
         else:
-            self.collection.update(
-                { "_id": ObjectId(self._id) }, self)
+            self.collection.update_one(
+                {"_id": ObjectId(self._id)}, self)
         self._id = str(self._id)
 
     def reload(self):
@@ -38,11 +39,17 @@ class User(Model):
     def find_all(self):
         users = list(self.collection.find())
         for user in users:
-            user["_id"] = str(user["_id"]) #converting ObjectId to str
+            user["_id"] = str(user["_id"])  # converting ObjectId to str
         return users
 
     def find_by_name(self, name):
         users = list(self.collection.find({"name": name}))
+        for user in users:
+            user["_id"] = str(user["_id"])
+        return users
+
+    def find_by_name_job(self, name, job):
+        users = list(self.collection.find({"name": name, "job": job}))
         for user in users:
             user["_id"] = str(user["_id"])
         return users
